@@ -1,0 +1,72 @@
+# -------------------------
+# Python / Django
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Unit test / coverage
+.coverage
+.coverage.*
+.pytest_cache/
+.tox/
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Django specific
+db.sqlite3
+db.sqlite3-journal
+celerybeat-schedule
+media/
+staticfiles/
+
+# -------------------------
+# Environment & secrets
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# Logs & runtime data
+# -------------------------
+*.log
+logs/
+*.pid
+*.sock
+
+# -------------------------
+# Docker / Compose
+# -------------------------
+.docker/
+docker-compose.override.yml
+
+# -------------------------
+# Node / Frontend (if UI is added later)
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+
+# -------------------------
+# Editors / OS
+# -------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

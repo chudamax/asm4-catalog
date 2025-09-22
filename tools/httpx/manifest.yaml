@@ -1,0 +1,13 @@
+name: httpx
+version: "1.3.0"
+description: "HTTP probe for discovering alive web services."
+accepts: ["InvDomain","InvIP"]
+produces:
+  - type: "http.title@v1"
+    schema: "schemas/http_title_v1.json"
+parameters:
+  - name: follow_redirects
+    type: boolean
+    default: true
+constraints:
+  max_targets_per_batch: 1000
