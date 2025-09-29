@@ -1,4 +1,0 @@
-profile: default
-description: Default httpx profile
-parameters:
-  follow_redirects: true
