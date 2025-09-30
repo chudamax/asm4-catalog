@@ -1,0 +1,6 @@
+name: "Detect SSH on Public IPs"
+query_kql: event.port == 22 and event.protocol == "tcp" and event.is_public == true
+severity: high
+title: "SSH exposed to the internet"
+description: "Port 22 open on a public host."
+tenant_id: null

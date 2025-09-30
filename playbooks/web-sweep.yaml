@@ -1,0 +1,5 @@
+slug: "web-sweep"
+steps:
+  - name: "Enumerate subdomains"
+    profile: "subdomain-default"
+    scope_rule_ref: "domains_prod"

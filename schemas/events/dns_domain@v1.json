@@ -1,0 +1,4 @@
+{ "title":"dns.domain@v1", "type":"object",
+  "properties": { "payload": { "type":"object", "properties": { "name":{"type":"string"}, "root":{"type":"string"} }, "required":["name","root"]}},
+  "required":["payload"]
+}

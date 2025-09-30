@@ -1,0 +1,11 @@
+slug: "promote_owned_subdomains"
+subject_type: "dns.domain@v1"
+conditions:
+  any:
+    - domain_under_owned_domain: true
+exceptions:
+  any:
+    - domain_blocklisted: true
+action:
+  on_match: "auto_promote"
+  on_mismatch: "skip"
