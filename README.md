@@ -1,4 +1,4 @@
-# ASM Tools (Skeleton)
+```text
 /catalog.yaml                        # optional repo metadata (name, apiVersion)
 schemas/
   events/*.json                      # JSON Schemas for event types (e.g., dns_domain@v1.json)
@@ -29,3 +29,4 @@ quotas/
   *.yaml                             # quota/rate policies (optional)
 providers/
   *.yaml                             # (optional) provider profile samples, if you expose them
+```
