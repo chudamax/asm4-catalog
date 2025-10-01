@@ -18,7 +18,7 @@ constraints:
   max_batch_size: 10000
 
 runtime:
-  image: "${ASM_REGISTRY}/${ASM_REGISTRY_NAMESPACE}/subdomain-synth:0.1.0"
+  image: "subdomain-synth:0.1.0"
   entrypoint: ["python", "/app/adapter.py"]
   cpu_millis: 100
   memory_mb: 64
