@@ -43,7 +43,7 @@
             },
             "additionalProperties": false
           },
-          "when": { "type": "string" }  // optional future condition
+          "when": { "type": "string" } 
         },
         "additionalProperties": false
       }
