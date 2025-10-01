@@ -1,6 +1,7 @@
-slug: "web-sweep"
 steps:
   - name: "Enumerate subdomains"
-    profile: "subdomain-default"
+    profile:
+      slug: subdomain-default
     scope_rule:
       slug: domains_prod
+      # version: "1"   # optional; latest is picked if omitted
