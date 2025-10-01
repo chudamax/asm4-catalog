@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://asm.local/schemas/playbook.schema.json",
+  "title": "ASM Playbook",
+  "type": "object",
+  "required": ["slug", "steps"],
+  "properties": {
+    "slug": { "type": "string", "minLength": 1 },
+    "version": { "type": ["string", "integer"] },
+    "description": { "type": "string" },
+    "labels": { "type": "object", "additionalProperties": true },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "profile", "scope_rule"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "profile": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": {
+              "slug": { "type": "string", "minLength": 1 },
+              "version": { "type": ["string", "integer"] }
+            },
+            "additionalProperties": false
+          },
+          "scope_rule": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": {
+              "slug": { "type": "string", "minLength": 1 },
+              "version": { "type": ["string", "integer"] }
+            },
+            "additionalProperties": false
+          },
+          "batch": {
+            "type": "object",
+            "properties": {
+              "max_targets": { "type": "integer", "minimum": 1 },
+              "max_concurrency": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": false
+          },
+          "when": { "type": "string" }  // optional future condition
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
