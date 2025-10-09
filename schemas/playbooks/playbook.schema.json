@@ -3,51 +3,155 @@
   "$id": "https://asm.local/schemas/playbook.schema.json",
   "title": "ASM Playbook",
   "type": "object",
-  "required": ["slug", "steps"],
+  "required": ["schemaVersion", "kind", "metadata", "bindings"],
   "properties": {
-    "slug": { "type": "string", "minLength": 1 },
-    "version": { "type": ["string", "integer"] },
-    "description": { "type": "string" },
-    "labels": { "type": "object", "additionalProperties": true },
-    "steps": {
+    "schemaVersion": { "const": "asm/v1" },
+    "kind": { "const": "Playbook" },
+    "metadata": {
+      "type": "object",
+      "required": ["slug", "version", "name"],
+      "properties": {
+        "slug": { "type": "string", "minLength": 1 },
+        "version": { "type": ["string", "integer"] },
+        "name": { "type": "string", "minLength": 1 },
+        "labels": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "promotionRuleset": { "$ref": "#/$defs/rulesetRef" },
+        "promotionDependency": { "$ref": "#/$defs/promotionDependency" },
+        "timeout": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "bindings": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": ["name", "profile", "scope_rule"],
-        "properties": {
-          "name": { "type": "string", "minLength": 1 },
-          "profile": {
-            "type": "object",
-            "required": ["slug"],
-            "properties": {
-              "slug": { "type": "string", "minLength": 1 },
-              "version": { "type": ["string", "integer"] }
-            },
-            "additionalProperties": false
-          },
-          "scope_rule": {
-            "type": "object",
-            "required": ["slug"],
-            "properties": {
-              "slug": { "type": "string", "minLength": 1 },
-              "version": { "type": ["string", "integer"] }
-            },
-            "additionalProperties": false
-          },
-          "batch": {
-            "type": "object",
-            "properties": {
-              "max_targets": { "type": "integer", "minimum": 1 },
-              "max_concurrency": { "type": "integer", "minimum": 1 }
-            },
-            "additionalProperties": false
-          },
-          "when": { "type": "string" } 
-        },
-        "additionalProperties": false
-      }
+      "items": { "$ref": "#/$defs/binding" }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "rulesetRef": {
+      "description": "Reference to a RuleSet by slug@version or object with slug/version",
+      "anyOf": [
+        { "type": "string", "pattern": "^[A-Za-z0-9_.:-]+@([0-9]+(\\.[0-9]+)*)$" },
+        {
+          "type": "object",
+          "required": ["slug"],
+          "properties": {
+            "slug": { "type": "string", "minLength": 1 },
+            "version": { "type": ["string", "integer"] }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "taskRef": {
+      "anyOf": [
+        { "type": "string", "pattern": "^[A-Za-z0-9_.:-]+@([0-9]+(\\.[0-9]+)*)$" },
+        {
+          "type": "object",
+          "required": ["slug"],
+          "properties": {
+            "slug": { "type": "string", "minLength": 1 },
+            "version": { "type": ["string", "integer"] }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "promotionDependency": {
+      "type": "string",
+      "enum": ["none", "all"]
+    },
+    "resourceRef": {
+      "type": "object",
+      "required": ["name", "ref"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "ref": { "type": "string", "pattern": "^resource:[A-Za-z0-9_./-]+@([0-9]{4}\\.\\d{2}|[0-9]+(\\.[0-9]+)*)$" },
+        "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "required": ["idx", "alias", "task", "scopeMap"],
+      "properties": {
+        "idx": { "type": "integer", "minimum": 0 },
+        "alias": { "type": "string", "minLength": 1 },
+        "task": { "$ref": "#/$defs/taskRef" },
+        "scopeMap": {
+          "type": "object",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_]*$": { "$ref": "#/$defs/rulesetRef" }
+          },
+          "additionalProperties": false
+        },
+        "context": {
+          "type": "object",
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_]*$": {
+              "type": "object",
+              "required": ["kind", "ruleset"],
+              "properties": {
+                "kind": { "type": "string" },
+                "ruleset": { "$ref": "#/$defs/rulesetRef" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "overrides": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "type": "object",
+              "properties": {
+                "params": { "type": "object", "additionalProperties": true },
+                "resources": { "type": "array", "items": { "$ref": "#/$defs/resourceRef" } }
+              },
+              "additionalProperties": false
+            },
+            "materialize": { "type": "object", "additionalProperties": true },
+            "coverage": {
+              "type": "object",
+              "properties": {
+                "ttl": { "type": "string", "pattern": "^\\d+[smhdw]$" },
+                "variant": {
+                  "type": "string",
+                  "enum": ["auto", "ip", "ip_port", "host_port", "domain", "url", "derived"]
+                },
+                "ttlByAnchor": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string", "pattern": "^\\d+[smhdw]$" }
+                },
+                "dedupeGroup": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "constraints": {
+              "type": "object",
+              "properties": {
+                "maxBatchSize": { "type": "integer", "minimum": 1 },
+                "maxConcurrency": { "type": "integer", "minimum": 1 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "promotionRuleset": { "$ref": "#/$defs/rulesetRef" },
+        "promotionDependency": { "$ref": "#/$defs/promotionDependency" },
+        "timeout": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
 }
