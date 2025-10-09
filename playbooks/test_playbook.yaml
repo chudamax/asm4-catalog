@@ -2,7 +2,7 @@ schemaVersion: asm/v1
 kind: Playbook
 metadata:
   slug: net-web-enum-passive-altmut-scan-httpx
-  version: "1.0.0"
+  version: "1"
   name: "DNS Passive + AltMutations + Port Scan + HTTPX"
 
 bindings:
