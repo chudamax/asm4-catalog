@@ -1,4 +1,4 @@
-slug: "domains_prod"
+slug: "tenant_root_domains"
 subject_type: "InvDomain"
 conditions:
   all:
