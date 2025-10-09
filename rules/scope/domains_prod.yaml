@@ -2,7 +2,6 @@ slug: "domains_prod"
 subject_type: "InvDomain"
 conditions:
   all:
-    - has_label: { key: "env", value: "prod" }
     - domain_under_owned_domain: true
 exceptions:
   any:
