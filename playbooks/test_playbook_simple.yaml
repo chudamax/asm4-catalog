@@ -1,0 +1,47 @@
+schemaVersion: asm/v1
+kind: Playbook
+metadata:
+  slug: test_playbook_simple
+  version: "1"
+  name: "test_playbook_simple"
+
+bindings:
+  - idx: 0
+    alias: dns-passive
+    task: dns.passive@1
+    scopeMap:
+      InvDomain: tenant_root_domains@1
+    promotionRuleset: tenant_root_domains@1
+    overrides:
+      tool:
+        params:
+          resolveA: true
+          resolveAAAA: true
+          emitMode: "domains+records"
+      coverage:
+        ttlByAnchor:
+          InvDomain: 7d
+        variant: domain
+
+  - idx: 1
+    alias: dns-altmutation
+    task: dns.altmutation@1
+    scopeMap:
+      InvDomain: tenant_root_domains@1
+    context:
+      tenantKnownSubdomains:
+        kind: InvDnsRecord
+        ruleset: tenant_dns_all@1
+    promotionRuleset: tenant_root_domains@1
+    overrides:
+      tool:
+        params:
+          useCommonPrefixes: true
+          useTenantPrefixes: true
+          maxCandidatesPerBase: 5000
+          resolveA: true
+          resolveAAAA: true
+      coverage:
+        ttlByAnchor:
+          InvDomain: 7d
+        variant: domain
