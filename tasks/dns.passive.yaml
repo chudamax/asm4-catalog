@@ -1,0 +1,33 @@
+schemaVersion: asm/v1
+kind: Task
+metadata:
+  slug: dns.passive
+  version: 1
+  name: "DNS Passive Enumeration"
+  description: "Enumerate domains passively; optional on-the-fly A/AAAA resolve to emit domains and dns_records."
+
+materialize:
+  input: domain                 # lines are domain names
+  materializer: domain.default@1
+  defaults:
+    # Users can override these in a playbook binding
+    resolveA: true
+    resolveAAAA: true
+    emitMode: "domains+records" # "domains" | "domains+records"
+
+tool:
+  manifest: dns.passive@2025.10
+  profile: dns-passive-balanced@1
+
+coverageDefaults:
+  ttl: 7d
+  variant: domain               # freshness per domain name
+
+constraintsDefault:
+  maxBatchSize: 5000
+  maxConcurrency: 8
+
+# Scope kinds this Task can consume
+expects:
+  anyOf:
+    - ["InvDomain"]

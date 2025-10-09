@@ -1,0 +1,95 @@
+schemaVersion: asm/v1
+kind: Playbook
+metadata:
+  slug: net-web-enum-passive-altmut-scan-httpx
+  version: "1.0.0"
+  name: "DNS Passive + AltMutations + Port Scan + HTTPX"
+
+# Ordered bindings (steps). Each binds a Task and wires scope + optional overrides.
+bindings:
+  - idx: 0
+    alias: dns-passive
+    task: dns.passive@1
+    # Start from tenant's root domains (override in Run if needed)
+    scopeMap:
+      InvDomain: tenant_root_domains@1
+    promotionRuleset: tenant_root_domains@1
+    overrides:
+      tool:
+        params:
+          # resolve A/AAAA during passive enumeration and emit *both* domains and dns_records
+          resolveA: true
+          resolveAAAA: true
+          emitMode: "domains+records"   # adapter param: produce domain + dns.record events together
+      coverage:
+        ttlByAnchor:
+          InvDomain: 7d
+        variant: domain                 # ledger freshness per domain
+
+  - idx: 1
+    alias: dns-altmutation
+    task: dns.altmutation@1
+    scopeMap:
+      InvDomain: tenant_root_domains@1
+    # Optionally seed the adapter with known subdomains for smarter mutations
+    context:
+      tenantKnownSubdomains:
+        kind: InvDnsRecord
+        ruleset: tenant_dns_all@1
+    promotionRuleset: tenant_root_domains@1
+    overrides:
+      tool:
+        params:
+          useCommonPrefixes: true
+          useTenantPrefixes: true
+          maxCandidatesPerBase: 5000
+          resolveA: true
+          resolveAAAA: true
+      coverage:
+        ttlByAnchor:
+          InvDomain: 7d
+        variant: domain
+
+  - idx: 2
+    alias: tcp-scan
+    task: masscan.tcp_scan@1
+    # Scan IPs resolved in recent DNS steps (or override to any IP ruleset you prefer)
+    scopeMap:
+      InvIP: dns_resolved_ips_recent@1
+    promotionRuleset: promotion_ip_all@1
+    overrides:
+      tool:
+        params:
+          ports: "80,443"            # example param; adjust to your scanner/manifest
+          scanRate: "auto"
+      coverage:
+        ttlByAnchor:
+          InvIPAddress: 7d
+        variant: ip
+      constraints:
+        max_targets: 254             # how many inventory items (roots/targets) per batch
+        max_concurrency: 5            # how many jobs the launcher can run in parallel
+
+  - idx: 3
+    alias: httpx-hostport
+    task: httpx.hostport@1
+    # Use discovered open TCP endpoints + recent DNS names to synthesize host:port
+    scopeMap:
+      InvNetworkService: tcp_open_ports_recent@1
+      InvDnsRecord: dns_recent@1
+      InvDnsHTTPService: http_service_recent@1
+    promotionRuleset: promotion_http_services_all@1
+    overrides:
+      materialize:
+        includeBareIpIfAliasesPresent: false  # prefer hostname variants when available
+      coverage:
+        ttlByAnchor:
+          InvNetworkService: 7d
+          InvHTTPService: 7d
+        variant: derived          # FQDN -> host_port; IP -> ip_port (scheme-agnostic)
+      tool:
+        params:
+          followRedirects: true
+      constraints:
+        max_targets: 50             # how many inventory items (roots/targets) per batch
+        max_concurrency: 10            # how many jobs the launcher can run in parallel

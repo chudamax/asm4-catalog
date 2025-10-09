@@ -1,0 +1,32 @@
+schemaVersion: asm/v1
+kind: Task
+metadata:
+  slug: httpx.hostport_probes
+  version: 1
+  name: "HTTP Probes (host:port)"
+  description: "Probe HTTP endpoints using host:port inputs; hostname/SNI-aware, scheme-agnostic variant."
+
+materialize:
+  input: hostport               # lines are host:port (FQDN or IP)
+  materializer: hostport.default@1
+  defaults:
+    includeBareIpIfAliasesPresent: true  # also emit ip:port when DNS aliases exist
+
+tool:
+  manifest: httpx@1.6.1-hostport
+  profile: httpx-balanced@1
+
+coverageDefaults:
+  ttl: 2d
+  variant: host_port            # freshness per host:port (SNI/Host-header aware)
+
+constraintsDefault:
+  maxBatchSize: 1000
+  maxConcurrency: 16
+
+# Accepts multiple inventory combinations; DNS is optional
+expects:
+  anyOf:
+    - ["InvHTTPService"]
+    - ["InvNetworkService"]
+    - ["InvNetworkService", "InvDnsRecord"]

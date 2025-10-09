@@ -1,0 +1,33 @@
+schemaVersion: asm/v1
+kind: Task
+metadata:
+  slug: dns.altmutation
+  version: 1
+  name: "DNS Alternate Mutations"
+  description: "Generate mutated subdomains from seeds; resolve and emit results."
+
+materialize:
+  input: domain
+  materializer: domain.default@1
+  defaults:
+    useCommonPrefixes: true
+    useTenantPrefixes: true
+    maxCandidatesPerBase: 5000
+    resolveA: true
+    resolveAAAA: true
+
+tool:
+  manifest: dns.altmutation@2025.10
+  profile: dns-altmutation-balanced@1
+
+coverageDefaults:
+  ttl: 7d
+  variant: domain
+
+constraintsDefault:
+  maxBatchSize: 10000
+  maxConcurrency: 8
+
+expects:
+  anyOf:
+    - ["InvDomain"]
