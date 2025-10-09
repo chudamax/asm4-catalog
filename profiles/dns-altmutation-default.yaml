@@ -1,0 +1,8 @@
+slug: "dns-altmutation-default"
+version: 1
+tool: "dns_altmutations"
+tool_version: "0.1.0"
+
+parameters:
+  prefixes: ["test1","test2","test"]    # optional override at profile level
+resources: {}

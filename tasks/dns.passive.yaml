@@ -17,7 +17,7 @@ materialize:
 
 tool:
   manifest: dns.passive@2025.10
-  profile: dns-passive-balanced@1
+  profile: dns-bbot-passive@1
 
 coverageDefaults:
   ttl: 7d
