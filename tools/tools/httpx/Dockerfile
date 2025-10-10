@@ -9,4 +9,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 WORKDIR /app
 COPY httpx_adapter.py /app/httpx_adapter.py
-ENTRYPOINT ["python","-m","asm_adapter_runtime","--adapter","httpx_adapter:HttpxAdapter"]
+ENTRYPOINT ["python","-m","adapter_runtime","--adapter","httpx_adapter:HttpxAdapter"]

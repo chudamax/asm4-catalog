@@ -1,124 +1,83 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
-from .base import EventModel
-from urllib.parse import urlparse, ParseResult
 
-def _parse_url(url: Optional[str], scheme: Optional[str], host: Optional[str], path: Optional[str]) -> Tuple[str,str,Optional[str],Optional[str]]:
-    """
-    Returns (scheme, host, norm_path, norm_query).
-    If `url` present, prefer it; otherwise compose from fields.
-    """
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
+from urllib.parse import urlparse
+
+from .base import EventModel
+
+
+def _derive_scheme(url: Optional[str], fallback: Optional[str]) -> Optional[str]:
     if url:
-        u: ParseResult = urlparse(url)
-        sch = (u.scheme or scheme or "").lower()
-        h = (u.hostname or host or "") or None
-        p = u.path or path or "/"
-        q = u.query or None
-        return sch, h, p if p else "/", q
-    # fallback
-    return (scheme or "http").lower(), host or None, (path or "/") or "/", None
+        parsed = urlparse(url)
+        if parsed.scheme:
+            return parsed.scheme.lower()
+    return fallback.lower() if isinstance(fallback, str) and fallback else fallback
+
 
 @dataclass
-class HttpResource(EventModel):
-    """
-    Mirrors InvHTTPResource identity/fields, plus parent HttpService link.
+class HttpResponse(EventModel):
+    """Represents the subset of ``httpx`` response data we care about."""
 
-      unique: (http_service, method, path, query)
-
-    Parent link is flattened so the ingestor can resolve HttpService first:
-      (ip, port, transport, scheme, host)
-    """
-    # Parent HttpService identity
+    url: str
+    host: Optional[str] = None
     ip: Optional[str] = None
     port: Optional[int] = None
-    transport: str = "tcp"
-    scheme: str = "http"
-    host: Optional[str] = None
-
-    # Resource identity
+    scheme: Optional[str] = None
     method: str = "GET"
-    path: str = "/"
-    query: Optional[str] = None
-
-    # Templates / parametrics (optional)
-    path_template: Optional[str] = None
-    query_template: Optional[str] = None
-    is_parametric: bool = False
-    route_signature: Optional[str] = None
-
-    # Response snapshot
     status_code: Optional[int] = None
+    title: Optional[str] = None
     content_type: Optional[str] = None
     content_length: Optional[int] = None
-    title: Optional[str] = None
-
-    headers: Optional[Dict[str, Any]] = field(default_factory=dict)
-    server: Optional[str] = None
-    location: Optional[str] = None
-    magic_type: Optional[str] = None
-    jarm: Optional[str] = None
-
+    webserver: Optional[str] = None
+    response_time: Optional[float] = None
     words: Optional[int] = None
     lines: Optional[int] = None
-    time: Optional[str] = None
-
     body_mmh3_hash: Optional[str] = None
     headers_mmh3_hash: Optional[str] = None
     favicon_mmh3_hash: Optional[str] = None
-
-    labels: Dict[str, Any] = field(default_factory=dict)
-
-    event_type: str = "http.resource"
+    headers: Dict[str, Any] = field(default_factory=dict)
+    target: Optional[str] = None
+    raw: Dict[str, Any] = field(default_factory=dict)
+    event_type: str = "http.response"
 
     @staticmethod
-    def from_httpx_json(o: Dict[str, Any]) -> "HttpResource":
-        # Prefer final_url for accurate path/query, fall back to url/fields
-        url = o.get("final_url") or o.get("url")
-        sch, host, path, query = _parse_url(url, o.get("scheme"), o.get("host"), o.get("path"))
+    def from_httpx_json(doc: Dict[str, Any]) -> "HttpResponse":
+        hash_info = doc.get("hash") or {}
 
-        # Hashes
-        body_mmh3 = (o.get("hash") or {}).get("body_mmh3")
-        headers_mmh3 = (o.get("hash") or {}).get("header_mmh3")
-        favicon_mmh3 = o.get("favicon")
+        body_hash = hash_info.get("body_mmh3")
+        headers_hash = hash_info.get("header_mmh3")
 
-        return HttpResource(
-            ip=o.get("ip") or o.get("host"),       # httpx sometimes sets 'ip'
-            port=o.get("port"),
-            transport="tcp",
-            scheme=(sch or "http").lower(),
-            host=host,
+        response_time = doc.get("response_time") or doc.get("time")
+        if isinstance(response_time, str):
+            try:
+                response_time = float(response_time)
+            except ValueError:  # pragma: no cover - depends on tool output
+                response_time = None
 
-            method=(o.get("method") or "GET").upper(),
-            path=path or "/",
-            query=query,
+        final_url = doc.get("final_url") or doc.get("url") or doc.get("input") or ""
 
-            # templates/parametrics not derivable from httpx: leave defaults
-            is_parametric=False,
+        scheme = _derive_scheme(final_url, doc.get("scheme")) or "http"
 
-            status_code=o.get("status_code"),
-            content_type=o.get("content_type"),
-            content_length=o.get("content_length"),
-            title=o.get("title"),
-
-            headers=o.get("header") or {},
-            server=o.get("webserver"),
-            location=o.get("location"),
-            magic_type=None,  # derive via file magic if you attach bodies
-            jarm=o.get("jarm"),
-
-            words=o.get("words"),
-            lines=o.get("lines"),
-            time=o.get("time"),
-
-            body_mmh3_hash=str(body_mmh3) if body_mmh3 is not None else None,
-            headers_mmh3_hash=str(headers_mmh3) if headers_mmh3 is not None else None,
-            favicon_mmh3_hash=str(favicon_mmh3) if favicon_mmh3 is not None else None,
-
-            labels={},
+        return HttpResponse(
+            url=final_url,
+            host=doc.get("host"),
+            ip=doc.get("ip"),
+            port=doc.get("port"),
+            scheme=scheme,
+            method=(doc.get("method") or "GET").upper(),
+            status_code=doc.get("status_code"),
+            title=doc.get("title"),
+            content_type=doc.get("content_type"),
+            content_length=doc.get("content_length"),
+            webserver=doc.get("webserver"),
+            response_time=response_time,
+            words=doc.get("words"),
+            lines=doc.get("lines"),
+            body_mmh3_hash=str(body_hash) if body_hash is not None else None,
+            headers_mmh3_hash=str(headers_hash) if headers_hash is not None else None,
+            favicon_mmh3_hash=str(doc.get("favicon")) if doc.get("favicon") is not None else None,
+            headers=doc.get("response_headers") or doc.get("header") or {},
+            target=doc.get("input"),
+            raw=doc,
         )
-
-    def service_key(self) -> str:
-        """Convenience for dedupe: scheme://(host|ip):port."""
-        h = self.host or self.ip or ""
-        return f"{self.scheme}://{h}:{self.port or 0}"

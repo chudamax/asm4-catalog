@@ -1,14 +1,29 @@
 from __future__ import annotations
+
 import os, io, json, gzip, time, hashlib, threading, tempfile, shutil, subprocess, sys, tarfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Callable, Optional, Any, Dict, List, Tuple
+from urllib.parse import urlparse
+
 import requests
 
 ISO_FMT = "%Y-%m-%dT%H:%M:%SZ"
 def iso_now() -> str: return datetime.now(timezone.utc).strftime(ISO_FMT)
 def _env(name: str, default: str="") -> str: return os.getenv(name) or default
+
+
+def _is_file_url(url: Optional[str]) -> bool:
+    return bool(url and url.startswith("file://"))
+
+
+def _file_path_from_url(url: str) -> Path:
+    parsed = urlparse(url)
+    path = parsed.path
+    if parsed.netloc and not path.startswith("/"):
+        path = f"/{parsed.netloc}{path}"  # file://localhost/tmp -> /localhost/tmp
+    return Path(path)
 
 def _post(url: Optional[str], payload: dict, timeout: int = 15) -> None:
     if not url: return
@@ -16,16 +31,43 @@ def _post(url: Optional[str], payload: dict, timeout: int = 15) -> None:
     except Exception: pass
 
 def _http_get_text(url: str, timeout: int = 60) -> str:
+    if _is_file_url(url):
+        return _file_path_from_url(url).read_text(encoding="utf-8")
     r = requests.get(url, timeout=timeout); r.raise_for_status(); return r.text
+
+
 def _http_get_json(url: str, timeout: int = 60) -> dict:
+    if _is_file_url(url):
+        import json as _json
+
+        with _file_path_from_url(url).open("r", encoding="utf-8") as fp:
+            return _json.load(fp)
     r = requests.get(url, timeout=timeout); r.raise_for_status(); return r.json()
-def _http_get_stream(url: str, timeout: int = 600, chunk: int = 1<<20) -> Iterable[bytes]:
+
+
+def _http_get_stream(url: str, timeout: int = 600, chunk: int = 1 << 20) -> Iterable[bytes]:
+    if _is_file_url(url):
+        with _file_path_from_url(url).open("rb") as fp:
+            while True:
+                part = fp.read(chunk)
+                if not part:
+                    break
+                yield part
+        return
     with requests.get(url, stream=True, timeout=timeout) as r:
         r.raise_for_status()
         for part in r.iter_content(chunk_size=chunk):
-            if part: yield part
+            if part:
+                yield part
+
+
 def _http_put_stream(url: str, fp, content_type: str, timeout: int = 600) -> None:
     headers = {"Content-Type": content_type}; fp.seek(0)
+    if _is_file_url(url):
+        dst = _file_path_from_url(url)
+        with dst.open("wb") as out:
+            shutil.copyfileobj(fp, out)
+        return
     r = requests.put(url, data=fp, headers=headers, timeout=timeout); r.raise_for_status()
 
 def _sha256_file(path: Path, chunk: int = 1<<20) -> str:
@@ -201,4 +243,6 @@ class BaseAdapter:
                                "tool":tool,"tool_version":tool_version,"phase":"error","error":str(e),"at": iso_now()}, timeout=10)
             print(f"FATAL: {e}", file=sys.stderr); return 1
         finally:
-            shutil.rmtree(workdir, ignore_errors=True)
+            preserve = os.getenv("ADAPTER_PRESERVE_WORKDIR")
+            if not preserve or preserve.lower() not in {"1", "true", "yes"}:
+                shutil.rmtree(workdir, ignore_errors=True)
