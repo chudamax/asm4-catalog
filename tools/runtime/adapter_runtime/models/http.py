@@ -39,7 +39,7 @@ class HttpResponse(EventModel):
     headers: Dict[str, Any] = field(default_factory=dict)
     target: Optional[str] = None
     raw: Dict[str, Any] = field(default_factory=dict)
-    event_type: str = "http.response"
+    event_type: str = field(init=False, default="http.response")
 
     @staticmethod
     def from_httpx_json(doc: Dict[str, Any]) -> "HttpResponse":

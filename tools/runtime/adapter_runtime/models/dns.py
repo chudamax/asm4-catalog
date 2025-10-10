@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Tuple
 from .base import EventModel
 
@@ -24,7 +24,7 @@ class DnsDomain(EventModel):
     root: str
     kind: str
     parent: Optional[str] = None
-    event_type: str = "dns.domain"
+    event_type: str = field(init=False, default="dns.domain")
 
     @staticmethod
     def from_name(name: str) -> "DnsDomain":
