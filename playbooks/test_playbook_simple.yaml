@@ -22,26 +22,3 @@ bindings:
         ttlByAnchor:
           InvDomain: 7d
         variant: domain
-
-  - idx: 1
-    alias: dns-altmutation
-    task: dns.altmutation@1
-    scopeMap:
-      InvDomain: tenant_root_domains@1
-    context:
-      tenantKnownSubdomains:
-        kind: InvDnsRecord
-        ruleset: tenant_dns_all@1
-    promotionRuleset: tenant_root_domains@1
-    overrides:
-      tool:
-        params:
-          useCommonPrefixes: true
-          useTenantPrefixes: true
-          maxCandidatesPerBase: 5000
-          resolveA: true
-          resolveAAAA: true
-      coverage:
-        ttlByAnchor:
-          InvDomain: 7d
-        variant: domain
