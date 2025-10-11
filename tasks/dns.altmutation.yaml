@@ -17,7 +17,7 @@ materialize:
     resolveAAAA: true
 
 tool:
-  profile: dns-altmutation-default@1
+  profile: altdns-default@1
 
 coverageDefaults:
   ttl: 7d

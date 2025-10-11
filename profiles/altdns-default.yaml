@@ -1,6 +1,6 @@
-slug: "dns-altmutation-default"
+slug: "altdns-default"
 version: 1
-tool: "dns_altmutations"
+tool: "altdns"
 tool_version: "1.0.2"
 
 parameters:
