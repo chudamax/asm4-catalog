@@ -9,12 +9,6 @@ metadata:
 materialize:
   input: domain
   materializer: domain.default@1
-  defaults:
-    useCommonPrefixes: true
-    useTenantPrefixes: true
-    maxCandidatesPerBase: 5000
-    resolveA: true
-    resolveAAAA: true
 
 tool:
   profile: altdns-default@1
