@@ -10,7 +10,7 @@ io:
       schema: "events/domain@v1"
 
 constraints:
-  max_batch_size: 1
+  max_batch_size: 100
 
 contracts:
   resources:               # static blobs from catalog/tenant

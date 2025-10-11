@@ -3,6 +3,22 @@ version: 1
 tool: "altdns"
 tool_version: "1.0.2"
 
-parameters:
-  prefixes: ["test1","test2","test"]    # optional override at profile level
-resources: {}
+params:                           # defaults (merge base)
+  useCommonPrefixes: true
+  useTenantPrefixes: true
+  maxCandidatesPerBase: 5000
+  resolveA: true
+  resolveAAAA: true
+  embeddedPrefixes: []            # keep small; prefer resources/context
+
+resources:                        # bind resource slots to artifacts
+  commonPrefixes:
+    ref: dns/prefixes/common@2025.10
+
+# (Optional) context defaults — you can leave empty and let playbooks choose:
+contextDefaults:
+  tenantPrefixes:
+    provider: tenant.dns_prefixes@1
+    params:
+      minOccurrences: 2
+      maxItems: 5000
