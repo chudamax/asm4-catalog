@@ -7,8 +7,8 @@ metadata:
 
 bindings:
   - idx: 0
-    alias: dns-passive
-    task: dns.passive@1
+    alias: dns.altmutation
+    task: dns.altmutation@1
     scopeMap:
       InvDomain: tenant_all_domains@1
     promotionRuleset: promote_owned_subdomains@1
