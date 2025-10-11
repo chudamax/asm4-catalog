@@ -1,66 +1,58 @@
-from __future__ import annotations
-
 import json
-from pathlib import Path
 from typing import List, Optional
-
-from adapter_runtime import BaseAdapter, BatchConfig, Heartbeat
-from adapter_runtime.models import HttpResponse
-
+from pathlib import Path
+from adapter_runtime.base import BaseAdapter, BatchConfig, Heartbeat
+from models import HttpResponse, emit_event
 
 class HttpxAdapter(BaseAdapter):
     TOOL = "httpx"
     TOOL_VERSION = "1.6.1"
     PRODUCES = ("http.response",)
 
-    def __init__(self) -> None:
-        self._results_seen = 0
-
-    @property
-    def binary_path(self) -> str:
-        return "/usr/local/bin/httpx"
+    def __init__(self):
+        super().__init__()
+        self._seen_urls: set[str] = set()
 
     def build_cmd(self, targets: List[str], cfg: BatchConfig, workdir: Path) -> Optional[List[str]]:
-        target_file = workdir / "targets.txt"
-        target_file.write_text("\n".join(targets) + ("\n" if targets else ""), encoding="utf-8")
+        tf = workdir / "targets.txt"; tf.write_text("\n".join(targets))
+        threads = str(cfg.parameters.get("threads", 50))
+        include_resp = cfg.parameters.get("include_response", True)
+        include_chain = cfg.parameters.get("include_chain", False)
 
-        base_cmd = [
-            self.binary_path,
-            "-json",
-            "-no-color",
-            "-silent",
-            "-l",
-            str(target_file),
-        ]
+        argv = ["httpx", "-l", str(tf), "-json", "-silent", "-threads", threads]
+        if include_resp:
+            argv += ["-include-response"]
+        if include_chain:
+            argv += ["-include-chain"]
+        return argv
 
-        params = cfg.parameters or {}
-        extra_args = params.get("args") or params.get("extra_args")
-        if isinstance(extra_args, list):
-            base_cmd.extend(str(a) for a in extra_args)
-        elif isinstance(extra_args, str):
-            base_cmd.append(extra_args)
-
-        timeout = params.get("timeout")
-        if timeout:
-            base_cmd.extend(["-timeout", str(timeout)])
-
-        rate = params.get("rate")
-        if rate:
-            base_cmd.extend(["-rate", str(rate)])
-
-        return base_cmd
+    def _bump_unique(self, model: HttpResponse, hb: Heartbeat) -> None:
+        key = model.url or f"{model.host}:{model.port or 80}{model.path or ''}"
+        if key and key not in self._seen_urls:
+            self._seen_urls.add(key)
+            hb.metrics["processed_targets"] = len(self._seen_urls)
 
     def parse_tool_output(self, line: str, emit, hb: Heartbeat) -> None:
-        data = line.strip()
-        if not data:
+        s = line.strip()
+        if not s:
             return
-
         try:
-            doc = json.loads(data)
+            obj = json.loads(s)
         except json.JSONDecodeError:
             return
 
-        event = HttpResponse.from_httpx_json(doc)
-        emit(event.event_type, event.to_payload())
-        self._results_seen += 1
-        hb.metrics["processed_targets"] = self._results_seen
+        # main response
+        main = HttpResponse.from_httpx_json(obj)
+        emit_event(emit, main)
+        self._bump_unique(main, hb)
+
+        # optional redirect chain
+        chain = obj.get("chain") or []
+        for hop in chain:
+            hop_model = HttpResponse.from_httpx_json(hop)
+            emit_event(emit, hop_model)
+            self._bump_unique(hop_model, hb)
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(HttpxAdapter().run())
