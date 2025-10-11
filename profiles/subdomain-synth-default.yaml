@@ -1,8 +1,0 @@
-slug: "subdomain-synth-default"
-version: 1
-tool: "subdomain-synth"
-tool_version: "0.1.0"
-
-parameters:
-  prefixes: ["test1","test2","test"]    # optional override at profile level
-resources: {}
