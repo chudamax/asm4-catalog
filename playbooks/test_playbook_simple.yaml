@@ -13,11 +13,6 @@ bindings:
       InvDomain: tenant_all_domains@1
     promotionRuleset: promote_owned_subdomains@1
     overrides:
-      tool:
-        params:
-          resolveA: true
-          resolveAAAA: true
-          emitMode: "domains+records"
       coverage:
         ttlByAnchor:
           InvDomain: 7d
