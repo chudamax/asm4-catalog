@@ -1,15 +1,34 @@
 apiVersion: tool@v1
 tool: "httpx"
-version: "1.6.1"
-description: "ProjectDiscovery httpx runner emitting http.response objects"
-accepts: ["Domain","IP"]
-produces:
-  - event_type: "http.response"
-    schema: "events/http_response@v1"
+version: "1.7.1"
+description: "ProjectDiscovery httpx runner emitting http.resources objects"
+
+io:
+  inputKind: hostport
+  produces:
+    - event_type: "http.response"
+      schema: "events/http_response@v1"
+
 constraints:
   max_batch_size: 1000
+
+params:
+  - name: follow_redirects
+    type: boolean
+    required: false
+    default: false
+    description: "Follow redirects"
+
+contracts:
+  resources: []
+  context: []
+
 runtime:
-  image: "registry.asm.chudamax.com:443/asm-tools/httpx:1.6.1"
+  image: "httpx:1.7.1"
   image_digest: "sha256:REPLACE_WITH_HTTPX_DIGEST"
   cpu_millis: 500
   memory_mb: 256
+
+build:
+  dockerfile: "Dockerfile"
+  context: "."
