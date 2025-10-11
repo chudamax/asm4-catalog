@@ -10,8 +10,8 @@ bindings:
     alias: dns-passive
     task: dns.passive@1
     scopeMap:
-      InvDomain: tenant_root_domains@1
-    promotionRuleset: tenant_root_domains@1
+      InvDomain: tenant_all_domains@1
+    promotionRuleset: promote_owned_subdomains@1
     overrides:
       tool:
         params:

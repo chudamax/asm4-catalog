@@ -1,0 +1,9 @@
+slug: "tenant_all_domains"
+subject_type: "InvDomain"
+
+conditions:
+  all: []   # empty AND = true → matches all tenant domains
+
+exceptions:
+  any:
+    - has_label: { key: "no_scan", value: true }
