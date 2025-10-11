@@ -1,0 +1,29 @@
+schemaVersion: asm/v1
+kind: Resource
+metadata:
+  slug: dns/prefixes/common         # hierarchical slug
+  version: "2025.10"                # immutable version tag
+  title: Common subdomain prefixes
+  description: Curated, de-duplicated list of common subdomain prefixes.
+  labels: { category: wordlist, format: text, owner: "team-appsec" }
+
+spec:
+  media: text                       # text | json | bin | csv
+  filename: data.txt                # primary file in this folder
+  compression: none                 # none | gz
+  encoding: utf-8                   # for text/json/csv
+  lineFormat: one-per-line          # for text lists (optional)
+  commentPrefix: "#"                # optional
+  jsonSchema: null                  # for json resources (optional)
+  csv:
+    delimiter: ","                  # if media=csv (optional)
+    hasHeader: false
+
+  expectedSha256: null              # optional pin; if set, sync verifies equality
+  sizeLimitBytes: 20000000          # guardrail (optional)
+
+  license: internal                 # SPDX id or 'internal'
+  source:
+    kind: curated                   # curated | external | generated
+    url: ""                         # provenance (optional)
+    generatedBy: ""                 # tool/pipeline info (optional)
