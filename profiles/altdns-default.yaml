@@ -12,9 +12,9 @@ resources:                        # bind resource slots to artifacts
     ref: dns/prefixes/common@2025.10
 
 # (Optional) context defaults — you can leave empty and let playbooks choose:
-contextDefaults:
-  tenantPrefixes:
-    provider: tenant.dns_prefixes@1
-    params:
-      minOccurrences: 2
-      maxItems: 5000
+# contextDefaults:
+#   tenantPrefixes:
+#     provider: tenant.dns_prefixes@1
+#     params:
+#       minOccurrences: 2
+#       maxItems: 5000

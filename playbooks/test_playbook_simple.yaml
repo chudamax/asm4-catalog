@@ -17,3 +17,7 @@ bindings:
         ttlByAnchor:
           InvDomain: 7d
         variant: domain
+      contextProviders:
+      - slot: tenantPrefixes            
+        provider: tenant.dns_prefixes@1
+        params: { minOccurrences: 3, maxItems: 4000 }
