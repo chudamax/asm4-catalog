@@ -6,10 +6,6 @@ tool_version: "1.0.2"
 params:                           # defaults (merge base)
   useCommonPrefixes: true
   useTenantPrefixes: true
-  maxCandidatesPerBase: 5000
-  resolveA: true
-  resolveAAAA: true
-  embeddedPrefixes: []            # keep small; prefer resources/context
 
 resources:                        # bind resource slots to artifacts
   commonPrefixes:
