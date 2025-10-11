@@ -20,4 +20,9 @@ bindings:
       contextProviders:
       - slot: tenantPrefixes            
         provider: tenant.dns_prefixes@1
-        params: { minOccurrences: 1, maxItems: 4000 }
+        params: 
+          minOccurrences: 1
+          maxItems: 4000
+          splitHyphens: true         # ← singles like 'dev','app','test'
+          keepCompound: true         # ← keep 'dev-app' and 'test-app'
+          emitNgrams: false          # optional; usually not needed
