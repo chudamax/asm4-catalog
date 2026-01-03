@@ -7,15 +7,15 @@ from pathlib import Path
 import sys
 
 BASE_DIR = Path(__file__).resolve().parents[4]
-RUNTIME_SRC = BASE_DIR / 'tools' / 'adapter_runtime' / 'src'
-WRAPPERS_SRC = BASE_DIR / 'tools' / 'wrappers' / 'src'
+RUNTIME_SRC = BASE_DIR / 'tools' / 'runtime' / 'adapter_runtime' / 'src'
+WRAPPERS_SRC = BASE_DIR / 'tools' / 'runtime' / 'wrappers' / 'src'
 ADAPTER_SRC = Path(__file__).resolve().parents[1]
 for candidate in (RUNTIME_SRC, WRAPPERS_SRC, ADAPTER_SRC):
     if str(candidate) not in sys.path:
         sys.path.insert(0, str(candidate))
 
 from asm_tool_wrappers.masscan_wrapper import MasscanWrapper
-from adapter.masscan_adapter import MasscanAdapter
+from masscan_adapter import MasscanAdapter
 
 
 def _file_url(path: Path) -> str:
@@ -27,8 +27,8 @@ def test_masscan_adapter_produces_events_file(tmp_path, monkeypatch):
     inputs_file.write_text("", encoding="utf-8")
 
     manifest = {
-        "tool": "masscan-only",
-        "tool_version": "1.0",
+        "tool": "masscan",
+        "tool_version": "1.3.2",
         "parameters": {},
         "resources": [],
     }

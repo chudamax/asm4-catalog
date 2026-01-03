@@ -6,7 +6,7 @@ It is written to be **Codex-friendly**: clear file locations, required fields, a
 Assumptions:
 - You want to keep **tools inside the `asm-catalog` repo** (no separate tools repo).
 - Tools are executed as **container images**.
-- Tools implement the existing **`adapter_runtime` BaseAdapter contract**.
+- Tools implement the existing **`asm_adapter_runtime` BaseAdapter contract** (runtime is a Python package).
 
 ---
 
@@ -60,18 +60,11 @@ asm-catalog/
       resource.yaml
       ...files...
 
-  # Tools + shared runtime build
+  # Tools
   tools/
-    runtime/                       # optional shared runtime base image
-      Dockerfile
-      requirements.txt
-      adapter_runtime/             # python package used by all tools (BaseAdapter, models)
-        __init__.py
-        base.py
-        main.py
-        models/
-          __init__.py
-          ...canonical event models...
+    runtime/                       # runtime package used by tools (BaseAdapter, models)
+      adapter_runtime/
+      wrappers/
     tools/
       <tool>/
         manifest.yaml              # REQUIRED tool manifest (tool@v1)
@@ -274,20 +267,21 @@ build:
 
 ### 5.2 `tools/tools/nmap/Dockerfile`
 
-Use the shared runtime image (recommended):
+Install the runtime package inside the tool image:
 
 ```dockerfile
-ARG RUNTIME_IMAGE
-FROM ${RUNTIME_IMAGE}
+FROM python:3.11-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends nmap ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
+RUN pip install --no-cache-dir asm-adapter-runtime==0.1.0
+
 WORKDIR /app
 COPY nmap_adapter.py /app/nmap_adapter.py
 
-ENTRYPOINT ["python", "-m", "adapter_runtime", "--adapter", "nmap_adapter:NmapAdapter"]
+ENTRYPOINT ["asm-adapter", "--adapter", "nmap_adapter:NmapAdapter"]
 ```
 
 ### 5.3 `tools/tools/nmap/nmap_adapter.py` (skeleton)
@@ -299,10 +293,10 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional
 
-from adapter_runtime import BaseAdapter, BatchConfig, Heartbeat
+from asm_adapter_runtime import BaseAdapter, BatchConfig, Heartbeat
 
-# Prefer canonical models from adapter_runtime.models when available
-# from adapter_runtime.models import NetworkService
+# Prefer canonical models from asm_adapter_runtime.models when available
+# from asm_adapter_runtime.models import NetworkService
 
 class NmapAdapter(BaseAdapter):
     TOOL = "nmap"
@@ -765,7 +759,7 @@ FROM ${RUNTIME_IMAGE}
 WORKDIR /app
 COPY <tool>_adapter.py /app/<tool>_adapter.py
 
-ENTRYPOINT ["python", "-m", "adapter_runtime", "--adapter", "<tool>_adapter:<ToolTitle>Adapter"]
+ENTRYPOINT ["asm-adapter", "--adapter", "<tool>_adapter:<ToolTitle>Adapter"]
 ```
 
 ### 15.4 `<tool>_adapter.py` template (Pattern A: CLI + streaming parse)
@@ -776,7 +770,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Optional
 
-from adapter_runtime import BaseAdapter, BatchConfig, Heartbeat
+from asm_adapter_runtime import BaseAdapter, BatchConfig, Heartbeat
 
 class <ToolTitle>Adapter(BaseAdapter):
     TOOL = "<tool>"
@@ -848,4 +842,3 @@ asm-testapp.com
 - If a tool needs raw sockets, declare it via runtime/run instructions and run with caps only when necessary.
 - Emit only the event types you declare in the tool manifest `io.produces[]`.
 - Always exit non-zero on fatal errors; exit zero for “no findings”.
-
