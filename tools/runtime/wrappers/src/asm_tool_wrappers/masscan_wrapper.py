@@ -58,8 +58,9 @@ class MasscanWrapper(BaseWrapper):
                     cmd.extend(["--shard", str(value)])
                 break
 
-        if params.get("masscan_exclude"):
-            cmd.extend(["--excludefile", str(params["masscan_exclude"])])
+        exclude = params.get("exclude") or params.get("exclude_file") or params.get("masscan_exclude")
+        if exclude:
+            cmd.extend(["--excludefile", str(exclude)])
 
         if params.get("banners") or params.get("masscan_banners"):
             cmd.append("--banners")

@@ -1,0 +1,75 @@
+apiVersion: tool@v1
+tool: "masscan"
+version: "1.3.2"
+description: "Masscan scanner emitting network.service events"
+
+io:
+  inputKind: ip
+  produces:
+    - event_type: "network.service"
+      schema: "events/network_service@v1"
+
+constraints:
+  max_batch_size: 65536
+
+params:
+  - name: ports
+    type: string
+    required: false
+    default: "1-1024"
+    description: "Ports or ranges (masscan -p syntax), e.g. 80,443,8000-8100"
+
+  - name: rate
+    type: integer
+    required: false
+    default: 1000
+    description: "Packet rate per second"
+
+  - name: interface
+    type: string
+    required: false
+    description: "Network interface to use for the scan"
+
+  - name: shards
+    type: array
+    items: { type: integer }
+    required: false
+    description: "Shard split as [total_shards, shard_index]"
+
+  - name: shard
+    type: string
+    required: false
+    description: "Shard specification (masscan --shard syntax)"
+
+  - name: exclude
+    type: string
+    required: false
+    description: "Path to an exclude file passed to --excludefile"
+
+  - name: banners
+    type: boolean
+    required: false
+    default: false
+    description: "Enable banner grabbing"
+
+  - name: extra_args
+    type: array
+    items: { type: string }
+    required: false
+    description: "Extra CLI args appended at end (use sparingly)"
+
+contracts:
+  resources: []
+  context: []
+
+runtime:
+  image: "masscan:1.3.2"
+  image_digest: "sha256:REPLACE_AFTER_PUBLISH"
+  cpu_millis: 500
+  memory_mb: 512
+  timeout_seconds: 1800
+
+build:
+  dockerfile: "Dockerfile"
+  context: "."
+  args: {}

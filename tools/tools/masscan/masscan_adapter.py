@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from asm_adapter_runtime import BatchConfig, Heartbeat
-from asm_adapter_runtime.base import EmitFn, WrapperAdapter
+from asm_adapter_runtime import BatchConfig, Heartbeat, WrapperAdapter
+from asm_adapter_runtime.base import EmitFn
 from asm_tool_wrappers.masscan_wrapper import MasscanWrapper
 
 

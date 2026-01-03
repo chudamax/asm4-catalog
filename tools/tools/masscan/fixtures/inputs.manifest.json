@@ -1,0 +1,7 @@
+{
+  "tool": "masscan",
+  "tool_version": "1.3.2",
+  "parameters": { "ports": "80,443", "rate": 1000 },
+  "resources": [],
+  "tool_profile": { "slug": "masscan-default", "version": 1 }
+}
