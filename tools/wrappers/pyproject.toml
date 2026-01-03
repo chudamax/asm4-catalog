@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asm-tool-wrappers"
+version = "0.1.0"
+description = "Wrappers for CLI tools emitting ASM canonical events."
+requires-python = ">=3.11"
+dependencies = [
+    "asm-adapter-runtime>=0.1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "network.service@v1",
+  "description": "Represents an open network service discovered during port scanning.",
+  "type": "object",
+  "properties": {
+    "ip": {
+      "type": "string",
+      "description": "IPv4 or IPv6 address hosting the service."
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535,
+      "description": "Network port number."
+    },
+    "protocol": {
+      "type": "string",
+      "description": "Transport protocol reported by the scanner (e.g., tcp)."
+    },
+    "status": {
+      "type": "string",
+      "description": "State of the port as observed by the scanner (e.g., open)."
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "description": "Optional reason returned by the scanner for the status."
+    },
+    "ttl": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Optional time-to-live value observed in the response packet."
+    },
+    "banner": {
+      "type": ["string", "null"],
+      "description": "Optional service banner data reported by the scanner."
+    },
+    "service": {
+      "type": ["string", "null"],
+      "description": "Optional service name identified by the scanner."
+    },
+    "scanned_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Timestamp when the service was observed, in RFC 3339 format."
+    }
+  },
+  "required": ["ip", "port", "protocol", "status"],
+  "additionalProperties": false
+}

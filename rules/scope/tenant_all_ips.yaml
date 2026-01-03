@@ -1,0 +1,9 @@
+slug: "tenant_all_ips"
+subject_type: "InvIP"
+
+conditions:
+  all: []
+
+exceptions:
+  any:
+    - ip_out_of_scope: true

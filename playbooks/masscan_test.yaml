@@ -1,0 +1,19 @@
+schemaVersion: asm/v1
+kind: Playbook
+metadata:
+  slug: masscan_test
+  version: "1"
+  name: "masscan_test"
+
+bindings:
+  - idx: 0
+    alias: masscan.scan
+    task: masscan.scan@1
+    scopeMap:
+      InvIP: tenant_all_ips@1
+    promotionRuleset: promote_network_services@1
+    overrides:
+      coverage:
+        ttlByAnchor:
+          InvIP: 14d
+        variant: ip

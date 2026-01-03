@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asm-adapter-runtime"
+version = "0.1.0"
+description = "Adapter runtime SDK: CLI, BaseAdapter, envelopes, I/O, signals."
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31.0",
+    "typing-extensions>=4.7.0",
+]
+
+[project.scripts]
+asm-adapter = "asm_adapter_runtime.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

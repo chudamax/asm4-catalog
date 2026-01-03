@@ -1,0 +1,13 @@
+slug: "promote_network_services"
+subject_type: "network.service@v1"
+
+conditions:
+  any:
+    - ip_in_inventory: true
+
+exceptions:
+  any: []
+
+action:
+  on_match: "auto_promote"
+  on_mismatch: "skip"

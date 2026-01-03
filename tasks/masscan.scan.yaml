@@ -1,0 +1,27 @@
+schemaVersion: asm/v1
+kind: Task
+metadata:
+  slug: masscan.scan
+  version: 1
+  name: "Masscan TCP Scan"
+  description: "Scan IP addresses for open TCP services using the Masscan adapter."
+
+materialize:
+  input: ip
+  materializer: ip.default@1
+
+tool:
+  profile: masscan-default@1
+
+coverageDefaults:
+  ignoreLedger: true
+  ttl: 14d
+  variant: ip
+
+constraintsDefault:
+  maxBatchSize: 65536
+  maxConcurrency: 8
+
+expects:
+  anyOf:
+    - ["InvIP"]

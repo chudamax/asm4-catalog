@@ -1,0 +1,12 @@
+slug: "masscan-default"
+version: 1
+tool: "masscan"
+tool_version: "1.3.2"
+
+description: "Default Masscan profile scanning the top 1024 TCP ports with moderate rate."
+
+params:
+  ports: "80,443"
+  rate: 1000
+
+resources: {}
