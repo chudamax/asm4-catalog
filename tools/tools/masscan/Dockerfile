@@ -1,12 +1,16 @@
 FROM python:3.11-slim
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends masscan ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends masscan ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir asm-adapter-runtime==0.1.0 asm-tool-wrappers==0.1.0
+# Install local SDKs from the repo (works only if build context is repo root)
+COPY tools/runtime/adapter_runtime /tmp/asm_adapter_runtime
+COPY tools/runtime/wrappers  /tmp/asm_tool_wrappers
+RUN pip install --no-cache-dir -e /tmp/asm_adapter_runtime -e /tmp/asm_tool_wrappers
 
 WORKDIR /app
-COPY masscan_adapter.py /app/masscan_adapter.py
 
-ENTRYPOINT ["asm-adapter", "--adapter", "masscan_adapter:MasscanAdapter"]
+# Copy adapter code from repo path (not from tool-context root)
+COPY tools/tools/masscan/masscan_adapter.py /app/masscan_adapter.py
+
+ENTRYPOINT ["python", "-m", "asm_adapter_runtime.cli", "--adapter", "masscan_adapter:MasscanAdapter"]

@@ -114,12 +114,13 @@ class BaseAdapter:
         return process.returncode or 0
 
     def run(self, *, settings: Optional[RuntimeSettings] = None) -> int:
+        
         try:
             runtime = settings or RuntimeSettings.from_env(self.TOOL, self.TOOL_VERSION)
         except Exception as exc:
             print(f"FATAL: {exc}", file=sys.stderr)
             return 2
-
+        
         workdir = Path(tempfile.mkdtemp(prefix=f"asm-batch-{runtime.batch_id or 'local'}-"))
         resources_dir = ensure_dir(workdir / "resources")
         events_path = workdir / "events.jsonl.gz"
@@ -137,6 +138,7 @@ class BaseAdapter:
         resolved_version = runtime.tool_version
 
         try:
+            
             targets = self._load_targets(runtime.inputs_url)
             cfg = self._load_manifest(runtime.resources_manifest_url)
             cfg.tool = cfg.tool or runtime.tool
@@ -162,6 +164,7 @@ class BaseAdapter:
             success = True
             return 0
         except SystemExit:
+            
             raise
         except Exception as exc:  # pragma: no cover
             emit_error(runtime.signal_url, signal_payload, str(exc))

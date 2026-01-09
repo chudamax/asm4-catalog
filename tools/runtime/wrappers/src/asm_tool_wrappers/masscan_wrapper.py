@@ -130,7 +130,7 @@ class MasscanWrapper(BaseWrapper):
         Returns:
             A list of :class:`NetworkService` instances detected by the scan.
         """
-
+        print(2)
         all_targets = _flatten_targets(targets)
         if ip:
             _append_target(all_targets, ip)
