@@ -3,28 +3,20 @@ set -euo pipefail
 
 trap 'echo ""; echo "ERROR at line $LINENO: $BASH_COMMAND"; exit 1' ERR
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+ADAPTER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$ADAPTER_DIR/../../.." && pwd)"
 IMAGE="${IMAGE:-asm/masscan}"
 WORK="${WORK:-/tmp/asm-masscan-local}"
 
+echo "[run] ADAPTER_DIR=$ADAPTER_DIR"
 echo "[run] ROOT=$ROOT"
 echo "[run] IMAGE=$IMAGE"
 echo "[run] WORK=$WORK"
 
 mkdir -p "$WORK"
 
-# Fixtures
-printf "8.8.8.8\n" > "$WORK/inputs.txt"
-
-cat > "$WORK/inputs.manifest.json" <<'JSON'
-{
-  "tool": "masscan",
-  "tool_version": "1.0.0",
-  "parameters": { "ports": "443", "rate": 100 },
-  "resources": [],
-  "tool_profile": { "slug": "masscan-default", "version": 1 }
-}
-JSON
+cp "$ADAPTER_DIR/fixtures/inputs.txt" "$WORK/inputs.txt"
+cp "$ADAPTER_DIR/fixtures/inputs.manifest.json" "$WORK/inputs.manifest.json"
 
 rm -f "$WORK/events.jsonl.gz" "$WORK/container.log"
 
