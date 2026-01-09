@@ -21,7 +21,7 @@ export RESOURCES_MANIFEST_URL="file://$WORK/inputs.manifest.json"
 export OUTPUT_URL="file://$WORK/events.jsonl.gz"
 
 set -x
-python -m asm_adapter_runtime.cli --adapter masscan_adapter:MasscanAdapter 2>&1 | tee "$WORK/adapter.log"
+python3 -m asm_adapter_runtime.cli --adapter masscan_adapter:MasscanAdapter 2>&1 | tee "$WORK/adapter.log"
 set +x
 
 echo "[run] Adapter finished. Checking output..."
